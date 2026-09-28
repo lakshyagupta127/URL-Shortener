@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        input[type="url"] { width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #result { margin-top: 20px; font-weight: bold; }
+        #result a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="shorten-form">
+            <input type="url" id="original-url" placeholder="Enter URL here (e.g. https://example.com)" required>
+            <br>
+            <button type="submit">Shorten</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('shorten-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const originalUrl = document.getElementById('original-url').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Shortening...';
+
+            fetch('/api/urls/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ original_url: originalUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.short_url) {
+                    resultDiv.innerHTML = `Shortened URL: <a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
+                } else if (data.original_url) {
+                    resultDiv.innerHTML = `<span style="color:red">Error: ${data.original_url.join(', ')}</span>`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color:red">An error occurred.</span>`;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<span style="color:red">An error occurred. Please try again.</span>`;
+            });
+        });
+    </script>
+</body>
+</html>
